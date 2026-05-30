@@ -1,38 +1,34 @@
-const CACHE = 'wheredidiitgo-v3';
-const BASE = '/WhereDidItGo/';
-const ASSETS = [
-  BASE,
-  BASE + 'index.html',
-  BASE + 'manifest.json',
-  BASE + 'icon-192.png',
-  BASE + 'icon-512.png',
-  BASE + 'maskable-192.png',
-  BASE + 'apple-touch-icon.png'
-];
+const CACHE = 'wdig-v4';
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS).catch(() => {})));
   self.skipWaiting();
+  e.waitUntil(
+    caches.open(CACHE).then(c => c.addAll([
+      '/WhereDidItGo/',
+      '/WhereDidItGo/index.html'
+    ]).catch(() => {}))
+  );
 });
 
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys =>
-    Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-  ));
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    )
+  );
   self.clients.claim();
 });
 
 self.addEventListener('fetch', e => {
-  if (!e.request.url.includes(self.location.origin)) return;
+  const url = new URL(e.request.url);
+  if (url.origin !== self.location.origin) return;
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      return cached || fetch(e.request).then(res => {
-        if (res && res.status === 200) {
-          const clone = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
-        }
+    fetch(e.request)
+      .then(res => {
+        const clone = res.clone();
+        caches.open(CACHE).then(c => c.put(e.request, clone));
         return res;
-      });
-    }).catch(() => caches.match(BASE + 'index.html'))
+      })
+      .catch(() => caches.match('/WhereDidItGo/index.html'))
   );
 });

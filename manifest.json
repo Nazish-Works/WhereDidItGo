@@ -5,11 +5,6 @@
   "start_url": "/WhereDidItGo/",
   "scope": "/WhereDidItGo/",
   "display": "standalone",
-  "display_override": [
-    "window-controls-overlay",
-    "standalone",
-    "minimal-ui"
-  ],
   "background_color": "#040e0e",
   "theme_color": "#040e0e",
   "orientation": "portrait-primary",

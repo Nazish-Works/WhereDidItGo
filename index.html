@@ -2,25 +2,20 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<base href="/WhereDidItGo/" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="WhereDidItGo" />
+<meta name="mobile-web-app-capable" content="yes" />
 <meta name="application-name" content="WhereDidItGo" />
-<meta name="theme-color" content="#040e0e" media="(prefers-color-scheme: dark)" />
 <meta name="theme-color" content="#040e0e" />
-<meta name="msapplication-TileColor" content="#040e0e" />
-<meta name="msapplication-TileImage" content="icon-144.png" />
 <title>WhereDidItGo</title>
-<link rel="manifest" href="manifest.json" />
-<link rel="apple-touch-icon" href="apple-touch-icon.png" />
-<link rel="apple-touch-icon" sizes="152x152" href="icon-152.png" />
-<link rel="apple-touch-icon" sizes="167x167" href="icon-167.png" />
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+<link rel="manifest" href="/WhereDidItGo/manifest.json" />
+<link rel="apple-touch-icon" href="/WhereDidItGo/apple-touch-icon.png" />
+<link rel="apple-touch-icon" sizes="152x152" href="/WhereDidItGo/icon-152.png" />
+<link rel="apple-touch-icon" sizes="167x167" href="/WhereDidItGo/icon-167.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="/WhereDidItGo/apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="/WhereDidItGo/icon-192.png" />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
@@ -950,7 +945,7 @@ loadFromSupabase();
 })();
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').then(reg => {
+  navigator.serviceWorker.register('/WhereDidItGo/sw.js').then(reg => {
     reg.addEventListener('updatefound', () => {
       const nw = reg.installing;
       nw.addEventListener('statechange', () => {

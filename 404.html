@@ -2,13 +2,10 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <script>
-  // GitHub Pages PWA fix — redirect all 404s back to the app
-  var path = window.location.pathname;
-  var query = window.location.search;
-  var hash = window.location.hash;
-  var redirectUrl = '/WhereDidItGo/' + '?p=' + encodeURIComponent(path + query) + hash;
-  window.location.replace(redirectUrl);
+  sessionStorage.setItem('404', window.location.href);
+  window.location.replace('/WhereDidItGo/');
 </script>
 </head>
 <body></body>
