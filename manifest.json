@@ -2,8 +2,8 @@
   "name": "WhereDidItGo",
   "short_name": "WhereDidItGo",
   "description": "Track expenses and see where your money went",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "/WhereDidItGo/",
+  "scope": "/WhereDidItGo/",
   "display": "standalone",
   "display_override": [
     "window-controls-overlay",
@@ -88,5 +88,6 @@
       ]
     }
   ],
-  "screenshots": []
+  "screenshots": [],
+  "id": "/WhereDidItGo/"
 }
