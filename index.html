@@ -381,7 +381,7 @@ async function saveToSupabase(expense) {
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify({ id: expense.id, amt: expense.amt, title: expense.desc, cat: expense.cat, date: expense.date, person: expense.person || 'others' })
     });
-    if (!res.ok) { const err = await res.text(); alert('Save failed: ' + res.status + ' — ' + err); } else { alert('Saved to Supabase OK!'); }
+    if (!res.ok) console.error('Save failed:', res.status, await res.text());
   } catch(e) { console.warn('Save failed', e); }
 }
 
@@ -624,8 +624,10 @@ function renderReport() {
 }
 
 function switchTab(tab) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-'+tab).classList.add('active');
+  document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); s.style.display = ''; });
+  const el = document.getElementById('screen-'+tab);
+  el.classList.add('active');
+  el.style.display = 'block';
   document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
   const ti = document.getElementById('tab-'+tab);
   if (ti) ti.classList.add('active');
