@@ -43,7 +43,7 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); font-family:
 body::before { content: ''; position: fixed; top: -120px; left: 50%; transform: translateX(-50%); width: 600px; height: 400px; background: radial-gradient(ellipse, rgba(32,210,190,0.06) 0%, transparent 70%); pointer-events: none; z-index: 0; }
 .app { display: flex; flex-direction: column; height: 100dvh; max-width: 430px; margin: 0 auto; position: relative; overflow: hidden; }
 .statusbar { height: env(safe-area-inset-top, 44px); flex-shrink: 0; }
-.content { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding-bottom: 106px; position: relative; z-index: 1; min-height: 0; }
+.content { overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding-bottom: 106px; position: relative; z-index: 1; height: calc(100dvh - 60px); }
 .content::-webkit-scrollbar { display: none; }
 .navbar { padding: 6px 20px 14px; display: flex; align-items: center; justify-content: space-between; }
 .navbar-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; font-style: italic; letter-spacing: 0.5px; color: var(--text); line-height: 1; }
