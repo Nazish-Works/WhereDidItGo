@@ -72,8 +72,8 @@ body::before { content: ''; position: fixed; top: -120px; left: 50%; transform: 
 .cat-pill.active { background: rgba(32,210,190,0.12); border-color: var(--teal2); color: var(--teal); }
 .section { padding: 0 16px; margin-bottom: 24px; }
 .tx-group-label { font-size: 11px; color: var(--muted2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 600; padding-left: 2px; }
-.tx-card { background: var(--surface); border-radius: 18px; border: 0.5px solid var(--border); overflow: hidden; margin-bottom: 10px; }
-.tx-row { display: flex; align-items: center; gap: 12px; padding: 13px 16px; position: relative; transition: background 0.15s; }
+.tx-card { background: var(--surface); border-radius: 18px; border: 0.5px solid var(--border); overflow: hidden; margin-bottom: 10px; display: block; width: 100%; }
+.tx-row { display: flex; align-items: center; gap: 12px; padding: 13px 16px; position: relative; transition: background 0.15s; width: 100%; }
 .tx-row:active { background: var(--surface2); }
 .tx-row:not(:last-child)::after { content: ''; position: absolute; bottom: 0; left: 56px; right: 0; height: 0.5px; background: var(--border); }
 .tx-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
