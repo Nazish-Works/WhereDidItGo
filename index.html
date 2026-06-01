@@ -297,7 +297,14 @@ body::before { content: ''; position: fixed; top: -120px; left: 50%; transform: 
           </div>
         </div>
         <div class="chart-container">
-          <div class="chart-label" id="trend-chart-label">Daily trend</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <div class="chart-label" id="trend-chart-label" style="margin-bottom:0;">Daily trend</div>
+            <div id="trend-toggle" style="display:flex;gap:4px;">
+              <button onclick="setTrendView('daily')" id="tv-daily" style="padding:4px 10px;border-radius:12px;border:0.5px solid rgba(32,210,190,0.18);background:rgba(32,210,190,0.12);color:#20d2be;font-size:10px;font-weight:600;cursor:pointer;font-family:'Syne',sans-serif;">Daily</button>
+              <button onclick="setTrendView('monthly')" id="tv-monthly" style="padding:4px 10px;border-radius:12px;border:0.5px solid rgba(32,210,190,0.1);background:transparent;color:#5a8a87;font-size:10px;font-weight:600;cursor:pointer;font-family:'Syne',sans-serif;">Monthly</button>
+              <button onclick="setTrendView('alltime')" id="tv-alltime" style="padding:4px 10px;border-radius:12px;border:0.5px solid rgba(32,210,190,0.1);background:transparent;color:#5a8a87;font-size:10px;font-weight:600;cursor:pointer;font-family:'Syne',sans-serif;">All Time</button>
+            </div>
+          </div>
           <div class="bar-wrap"><canvas id="bar-chart" role="img" aria-label="Trend chart">Trend.</canvas></div>
         </div>
         <div class="chart-container">
@@ -553,8 +560,16 @@ function buildReportFilters() {
     `<div class="filter-chip ${rptCatFilter==='all'?'active':''}" onclick="setRptCat('all')">All</div>` +
     CATS.filter(c => !c.isReimb).map(c => `<div class="filter-chip ${rptCatFilter===c.id?'active':''}" onclick="setRptCat('${c.id}')">${c.emoji} ${c.label}</div>`).join('');
 }
+let trendView = 'daily';
 function setRptPerson(id) { rptPersonFilter = id; renderReport(); }
 function setRptCat(id) { rptCatFilter = id; renderReport(); }
+function setTrendView(v) { trendView = v; renderReport(); }
+function updateTrendToggle() {
+  ['daily','monthly','alltime'].forEach(v => {
+    const btn = document.getElementById('tv-'+v);
+    if (btn) { btn.style.background = v===trendView ? 'rgba(32,210,190,0.12)' : 'transparent'; btn.style.color = v===trendView ? '#20d2be' : '#5a8a87'; btn.style.borderColor = v===trendView ? 'rgba(32,210,190,0.18)' : 'rgba(32,210,190,0.1)'; }
+  });
+}
 
 function renderReport() {
   if (!currentUser) return;
@@ -591,25 +606,30 @@ function renderReport() {
     });
   }
   if (barChart) barChart.destroy();
-  if (rptCatFilter === 'all') {
+  updateTrendToggle();
+  const personBase = rptPersonFilter==='all' ? expenses : expenses.filter(e=>(e.person||'others')===rptPersonFilter);
+  const nonReimb = rptCatFilter==='all' ? personBase.filter(e=>e.cat!=='reimb') : personBase.filter(e=>e.cat===rptCatFilter);
+  if (trendView === 'daily') {
     document.getElementById('trend-chart-label').textContent = 'Daily trend — ' + n.toLocaleString('en-IN',{month:'long'});
-    const days = n.getDate(), dayLabels = [], dayVals = [];
-    for (let d=1; d<=days; d++) { const key = month+'-'+String(d).padStart(2,'0'); dayLabels.push(d); dayVals.push(Math.round(catFiltered.filter(e=>e.date===key).reduce((s,e)=>s+e.amt,0))); }
-    barChart = new Chart(document.getElementById('bar-chart'), {
-      type:'bar',
-      data:{ labels:dayLabels, datasets:[{ data:dayVals, backgroundColor:dayVals.map(v=>v>0?'#20d2be':'#122828'), borderRadius:4 }] },
-      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmt(ctx.raw)}}}, scales:{ x:{ticks:{color:'#5a8a87',font:{size:10},maxRotation:0},grid:{display:false},border:{display:false}}, y:{ticks:{color:'#5a8a87',font:{size:10},callback:v=>v>=1000?'₹'+(v/1000).toFixed(0)+'k':'₹'+v},grid:{color:'rgba(32,210,190,0.05)'},border:{display:false}} } }
-    });
+    const days = n.getDate(), dL = [], dV = [];
+    for (let d=1; d<=days; d++) { const key=month+'-'+String(d).padStart(2,'0'); dL.push(d); dV.push(Math.round(nonReimb.filter(e=>e.date.startsWith(month)&&e.date===key).reduce((s,e)=>s+e.amt,0))); }
+    barChart = new Chart(document.getElementById('bar-chart'), { type:'bar', data:{labels:dL, datasets:[{data:dV, backgroundColor:dV.map(v=>v>0?'#20d2be':'#122828'), borderRadius:4}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmt(ctx.raw)}}}, scales:{x:{ticks:{color:'#5a8a87',font:{size:10},maxRotation:0},grid:{display:false},border:{display:false}},y:{ticks:{color:'#5a8a87',font:{size:10},callback:v=>v>=1000?'₹'+(v/1000).toFixed(0)+'k':'₹'+v},grid:{color:'rgba(32,210,190,0.05)'},border:{display:false}}}} });
+  } else if (trendView === 'monthly') {
+    const catLabel = rptCatFilter==='all' ? 'All' : getCat(rptCatFilter).emoji+' '+getCat(rptCatFilter).label;
+    document.getElementById('trend-chart-label').textContent = catLabel + ' — last 6 months';
+    const mL=[], mV=[];
+    for (let i=5;i>=0;i--) { const d=new Date(n.getFullYear(),n.getMonth()-i,1), key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); mL.push(d.toLocaleString('en-IN',{month:'short'})); mV.push(Math.round(nonReimb.filter(e=>e.date.startsWith(key)).reduce((s,e)=>s+e.amt,0))); }
+    const barColor = rptCatFilter==='all' ? '#20d2be' : getCat(rptCatFilter).color;
+    barChart = new Chart(document.getElementById('bar-chart'), { type:'bar', data:{labels:mL, datasets:[{data:mV, backgroundColor:mV.map(v=>v>0?barColor:'#122828'), borderRadius:6}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmt(ctx.raw)}}}, scales:{x:{ticks:{color:'#5a8a87',font:{size:11},maxRotation:0},grid:{display:false},border:{display:false}},y:{ticks:{color:'#5a8a87',font:{size:10},callback:v=>v>=1000?'₹'+(v/1000).toFixed(0)+'k':'₹'+v},grid:{color:'rgba(32,210,190,0.05)'},border:{display:false}}}} });
   } else {
-    const cat = getCat(rptCatFilter);
-    document.getElementById('trend-chart-label').textContent = cat.emoji+' '+cat.label+' — monthly trend';
-    const monthLabels = [], monthVals = [];
-    for (let i=5; i>=0; i--) { const d = new Date(n.getFullYear(),n.getMonth()-i,1), key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); monthLabels.push(d.toLocaleString('en-IN',{month:'short'})); const pb = rptPersonFilter==='all'?expenses:expenses.filter(e=>(e.person||'others')===rptPersonFilter); monthVals.push(Math.round(pb.filter(e=>e.date.startsWith(key)&&e.cat===rptCatFilter).reduce((s,e)=>s+e.amt,0))); }
-    barChart = new Chart(document.getElementById('bar-chart'), {
-      type:'bar',
-      data:{ labels:monthLabels, datasets:[{ data:monthVals, backgroundColor:monthVals.map(v=>v>0?cat.color:'#122828'), borderRadius:6 }] },
-      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmt(ctx.raw)}}}, scales:{ x:{ticks:{color:'#5a8a87',font:{size:11},maxRotation:0},grid:{display:false},border:{display:false}}, y:{ticks:{color:'#5a8a87',font:{size:10},callback:v=>v>=1000?'₹'+(v/1000).toFixed(0)+'k':'₹'+v},grid:{color:'rgba(32,210,190,0.05)'},border:{display:false}} } }
-    });
+    document.getElementById('trend-chart-label').textContent = (rptCatFilter==='all'?'All spending':getCat(rptCatFilter).emoji+' '+getCat(rptCatFilter).label) + ' — all time';
+    const byMonth={};
+    nonReimb.forEach(e => { const m=e.date.slice(0,7); byMonth[m]=(byMonth[m]||0)+e.amt; });
+    const allMonths = Object.keys(byMonth).sort();
+    const aL = allMonths.map(m => { const [y,mo]=m.split('-'); return new Date(y,mo-1).toLocaleString('en-IN',{month:'short',year:'2-digit'}); });
+    const aV = allMonths.map(m => Math.round(byMonth[m]));
+    const barColor = rptCatFilter==='all' ? '#20d2be' : getCat(rptCatFilter).color;
+    barChart = new Chart(document.getElementById('bar-chart'), { type:'bar', data:{labels:aL, datasets:[{data:aV, backgroundColor:aV.map(v=>v>0?barColor:'#122828'), borderRadius:6}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmt(ctx.raw)}}}, scales:{x:{ticks:{color:'#5a8a87',font:{size:10},maxRotation:0},grid:{display:false},border:{display:false}},y:{ticks:{color:'#5a8a87',font:{size:10},callback:v=>v>=1000?'₹'+(v/1000).toFixed(0)+'k':'₹'+v},grid:{color:'rgba(32,210,190,0.05)'},border:{display:false}}}} });
   }
   const maxVal = sorted[0]?.[1]||1;
   document.getElementById('cat-breakdown').innerHTML = sorted.length ? sorted.map(([id,val]) => {
