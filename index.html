@@ -260,7 +260,7 @@ body::before { content: ''; position: fixed; top: -120px; left: 50%; transform: 
         <div class="hero-divider"></div>
         <div class="hero-chips" id="hero-chips"></div>
       </div>
-      <div id="balance-block" style="display:none;gap:8px;margin:0 16px 14px;">
+      <div id="balance-block" onclick="toggleBalance()" style="display:none;gap:8px;margin:0 16px 14px;cursor:pointer;">
         <div style="flex:1;background:#0c1f1f;border:0.5px solid rgba(52,232,160,0.2);border-radius:14px;padding:12px;">
           <div style="font-size:8px;color:#5a8a87;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:5px;">📥 Received</div>
           <div id="bal-income" style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:#34e8a0;">₹0</div>
@@ -270,7 +270,7 @@ body::before { content: ''; position: fixed; top: -120px; left: 50%; transform: 
           <div id="bal-spent" style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:#ff7070;">₹0</div>
         </div>
         <div style="flex:1;background:#0c1f1f;border:0.5px solid rgba(32,210,190,0.2);border-radius:14px;padding:12px;">
-          <div style="font-size:8px;color:#5a8a87;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:5px;">💰 Balance</div>
+          <div style="font-size:8px;color:#5a8a87;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:5px;">💰 Balance <span id="bal-eye" style="font-size:10px;">👁</span></div>
           <div id="bal-balance" style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:#20d2be;">₹0</div>
         </div>
       </div>
@@ -474,6 +474,7 @@ function renderHome() {
   document.getElementById('bal-income').textContent = fmt(received);
   document.getElementById('bal-spent').textContent = fmt(total);
   document.getElementById('bal-balance').textContent = fmt(received - total);
+  ['bal-income','bal-spent','bal-balance'].forEach(id => { document.getElementById(id).style.filter = balanceHidden ? 'blur(10px)' : 'none'; });
   document.getElementById('balance-block').style.display = (incomeTotal > 0 || reimbTotal > 0) ? 'flex' : 'none';
   const reimbTotal = reimb.reduce((s,e) => s+e.amt, 0);
   const net = total - reimbTotal;
@@ -555,6 +556,16 @@ function buildPersonGrid() {
   }).join('');
 }
 function selectPerson(id) { sheetPerson = id; buildPersonGrid(); }
+let balanceHidden = true;
+function toggleBalance() {
+  balanceHidden = !balanceHidden;
+  ['bal-income','bal-spent','bal-balance'].forEach(id => {
+    const el = document.getElementById(id);
+    el.style.filter = balanceHidden ? 'blur(10px)' : 'none';
+    el.style.transition = 'filter 0.3s ease';
+  });
+  document.getElementById('bal-eye').textContent = balanceHidden ? '👁' : '👁‍🗨';
+}
 function setEntryMode(mode) {
   entryMode = mode;
   document.getElementById('mode-expense').style.background = mode==='expense' ? 'rgba(32,210,190,0.12)' : 'transparent';
