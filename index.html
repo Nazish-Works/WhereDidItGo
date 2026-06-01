@@ -476,7 +476,6 @@ function renderHome() {
   document.getElementById('bal-balance').textContent = fmt(received - total);
   ['bal-income','bal-spent','bal-balance'].forEach(id => { document.getElementById(id).style.filter = balanceHidden ? 'blur(10px)' : 'none'; });
   document.getElementById('balance-block').style.display = (incomeTotal > 0 || reimbTotal > 0) ? 'flex' : 'none';
-  const reimbTotal = reimb.reduce((s,e) => s+e.amt, 0);
   const net = total - reimbTotal;
   document.getElementById('home-subtitle').textContent = new Date().toLocaleString('en-IN', { month:'long', year:'numeric' });
   document.getElementById('hero-amount').textContent = fmt(total);
