@@ -523,7 +523,7 @@ function renderHome() {
       return `<div class="tx-row" id="txrow-${e.id}">
         <div class="tx-icon" style="background:${c.color}18">${c.emoji}</div>
         <div class="tx-info"><div class="tx-name">${e.desc}</div><div class="tx-cat">${c.label} · ${p.label}</div></div>
-        <div class="tx-right"><div class="tx-amount ${isReimb||isIncome?'reimb':''}" style="color:${c.color}">${fmt(e.amt)}</div>
+        <div class="tx-right"><div class="tx-amount ${isReimb||isIncome?'reimb':''}" style="color:${c.color}">${fmt(e.amt)}</div><div class="tx-date">${fmtDate(e.date)}</div></div>
         <button class="tx-del-btn" onclick="deleteExpense(${e.id},event)" aria-label="Delete">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
         </button>
