@@ -262,7 +262,7 @@ body::before { content: ''; position: fixed; top: -120px; left: 50%; transform: 
       </div>
       <div id="balance-block" style="display:none;gap:8px;margin:0 16px 14px;">
         <div style="flex:1;background:#0c1f1f;border:0.5px solid rgba(52,232,160,0.2);border-radius:14px;padding:12px;">
-          <div style="font-size:8px;color:#5a8a87;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:5px;">📥 Income</div>
+          <div style="font-size:8px;color:#5a8a87;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:5px;">📥 Received</div>
           <div id="bal-income" style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:#34e8a0;">₹0</div>
         </div>
         <div style="flex:1;background:#0c1f1f;border:0.5px solid rgba(255,112,112,0.15);border-radius:14px;padding:12px;">
@@ -469,10 +469,12 @@ function renderHome() {
   const reimb = me.filter(e => e.cat === 'reimb');
   const total = spent.reduce((s,e) => s+e.amt, 0);
   const incomeTotal = incomeEntries.reduce((s,e) => s+e.amt, 0);
-  document.getElementById('bal-income').textContent = fmt(incomeTotal);
+  const reimbTotal = reimb.reduce((s,e) => s+e.amt, 0);
+  const received = incomeTotal + reimbTotal;
+  document.getElementById('bal-income').textContent = fmt(received);
   document.getElementById('bal-spent').textContent = fmt(total);
-  document.getElementById('bal-balance').textContent = fmt(incomeTotal - total);
-  document.getElementById('balance-block').style.display = incomeTotal > 0 ? 'flex' : 'none';
+  document.getElementById('bal-balance').textContent = fmt(received - total);
+  document.getElementById('balance-block').style.display = (incomeTotal > 0 || reimbTotal > 0) ? 'flex' : 'none';
   const reimbTotal = reimb.reduce((s,e) => s+e.amt, 0);
   const net = total - reimbTotal;
   document.getElementById('home-subtitle').textContent = new Date().toLocaleString('en-IN', { month:'long', year:'numeric' });
