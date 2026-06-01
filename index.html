@@ -178,6 +178,14 @@ body::before { content: ''; position: fixed; top: -120px; left: 50%; transform: 
 .user-badge-avatar { width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; }
 .user-badge-name { font-size:12px; font-weight:500; color:var(--text); }
 @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(6px)} }
+#tx-feed { display: block; width: 100%; }
+.tx-group-label { display: block; width: 100%; }
+.tx-card { display: block; width: 100%; }
+.tx-row { display: flex; flex-direction: row; align-items: center; gap: 12px; padding: 13px 16px; width: 100%; position: relative; }
+.tx-info { flex: 1; min-width: 0; }
+.tx-right { flex-shrink: 0; text-align: right; }
+.tx-del-btn { flex-shrink: 0; }
+.section { display: block; width: 100%; }
 </style>
 </head>
 <body>
