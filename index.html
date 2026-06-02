@@ -271,7 +271,8 @@ body::before { content: ''; position: fixed; top: -120px; left: 50%; transform: 
       <div id="balance-user-toggle" style="display:none;padding:0 16px;margin-bottom:8px;">
         <div style="display:flex;gap:4px;align-items:center;">
           <span style="font-size:9px;color:#5a8a87;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-right:4px;">View</span>
-          <button onclick="setBalanceUser('nazish')" id="bu-nazish" class="filter-chip active" style="padding:4px 10px;font-size:11px;">Nazish</button>
+          <button onclick="setBalanceUser('all')" id="bu-all" class="filter-chip active" style="padding:4px 10px;font-size:11px;">All</button>
+          <button onclick="setBalanceUser('nazish')" id="bu-nazish" class="filter-chip" style="padding:4px 10px;font-size:11px;">Nazish</button>
           <button onclick="setBalanceUser('arshad')" id="bu-arshad" class="filter-chip" style="padding:4px 10px;font-size:11px;">Arshad</button>
           <button onclick="setBalanceUser('others')" id="bu-others" class="filter-chip" style="padding:4px 10px;font-size:11px;">Others</button>
         </div>
@@ -484,14 +485,8 @@ function renderHome() {
   const spent = me.filter(e => e.cat !== 'reimb' && e.cat !== 'income');
   const reimb = me.filter(e => e.cat === 'reimb');
   const total = spent.reduce((s,e) => s+e.amt, 0);
-  const incomeTotal = incomeEntries.reduce((s,e) => s+e.amt, 0);
-  const reimbTotal = reimb.reduce((s,e) => s+e.amt, 0);
-  const received = incomeTotal + reimbTotal;
-  document.getElementById('bal-income').textContent = fmt(received);
-  document.getElementById('bal-spent').textContent = fmt(total);
-  document.getElementById('bal-balance').textContent = fmt(received - total);
-  ['bal-income','bal-spent','bal-balance'].forEach(id => { document.getElementById(id).style.filter = balanceHidden ? 'blur(10px)' : 'none'; });
-  document.getElementById('balance-block').style.display = (incomeTotal > 0 || reimbTotal > 0) ? 'flex' : 'none';
+  if (!balanceViewUser) balanceViewUser = 'all';
+  renderBalanceBlock();
   const net = total - reimbTotal;
   document.getElementById('home-subtitle').textContent = new Date().toLocaleString('en-IN', { month:'long', year:'numeric' });
   document.getElementById('hero-amount').textContent = fmt(total);
@@ -532,6 +527,7 @@ function renderHome() {
         <div class="tx-icon" style="background:${c.color}18">${c.emoji}</div>
         <div class="tx-info"><div class="tx-name">${e.desc}</div><div class="tx-cat">${c.label} · ${p.label}</div></div>
         <div class="tx-right"><div class="tx-amount ${isReimb||isIncome?'reimb':''}" style="color:${c.color}">${fmt(e.amt)}</div><div class="tx-date">${fmtDate(e.date)}</div></div>
+        <button class="tx-del-btn" onclick="editExpense(${e.id},event)" aria-label="Edit" style="color:#20d2be;opacity:0.55;">✏️</button>
         <button class="tx-del-btn" onclick="deleteExpense(${e.id},event)" aria-label="Delete">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
         </button>
@@ -552,7 +548,25 @@ function deleteExpense(id, evt) {
     setTimeout(() => { expenses = expenses.filter(e => e.id !== id); saveData(); renderHome(); showToast('Deleted ✓'); deleteFromSupabase(id); }, 480);
   }
 }
-
+let editingId = null;
+function editExpense(id, evt) {
+  evt.stopPropagation();
+  const exp = expenses.find(e => e.id === id);
+  if (!exp) return;
+  editingId = id;
+  document.getElementById('sheet-overlay').classList.add('open');
+  document.getElementById('add-sheet').classList.add('open');
+  const isIncome = exp.cat === 'income';
+  entryMode = isIncome ? 'income' : 'expense';
+  setEntryMode(entryMode);
+  document.getElementById('inp-amount').value = exp.amt;
+  document.getElementById('inp-desc').value = exp.desc;
+  document.getElementById('inp-date').value = exp.date;
+  if (!isIncome) { sheetCat = exp.cat; buildCatGrid(); }
+  sheetPerson = exp.person || 'others';
+  buildPersonGrid();
+  document.querySelector('.submit-btn').textContent = isIncome ? 'Update Income' : 'Update Expense';
+}
 function buildCatGrid() {
   document.getElementById('cat-grid').innerHTML = CATS.map(c =>
     `<div class="cat-btn ${c.isReimb?'reimb-btn':''} ${c.id===sheetCat?'selected':''}" onclick="selectCat('${c.id}')">
@@ -575,7 +589,7 @@ let balanceHidden = true;
 let balanceViewUser = null;
 function setBalanceUser(id) {
   balanceViewUser = id;
-  ['nazish','arshad','others'].forEach(p => {
+  ['all','nazish','arshad','others'].forEach(p => {
     const btn = document.getElementById('bu-'+p);
     if (btn) { btn.className = 'filter-chip' + (p===id?' active':''); }
   });
@@ -583,8 +597,8 @@ function setBalanceUser(id) {
 }
 function renderBalanceBlock() {
   const month = thisMonth();
-  const viewUser = balanceViewUser || currentUser;
-  const userExpenses = expenses.filter(e => (e.person||'others') === viewUser && e.date.startsWith(month));
+  const viewUser = balanceViewUser || 'all';
+  const userExpenses = viewUser === 'all' ? expenses.filter(e => e.date.startsWith(month)) : expenses.filter(e => (e.person||'others') === viewUser && e.date.startsWith(month));
   const userIncome = userExpenses.filter(e => e.cat === 'income').reduce((s,e) => s+e.amt, 0);
   const userSpent = userExpenses.filter(e => e.cat !== 'income' && e.cat !== 'reimb').reduce((s,e) => s+e.amt, 0);
   const userReimb = userExpenses.filter(e => e.cat === 'reimb').reduce((s,e) => s+e.amt, 0);
@@ -622,6 +636,7 @@ function openAdd() {
   document.getElementById('sheet-overlay').classList.add('open');
   document.getElementById('add-sheet').classList.add('open');
   document.getElementById('inp-date').value = new Date().toISOString().slice(0,10);
+  editingId = null;
   entryMode = 'expense'; setEntryMode('expense');
   buildCatGrid(); buildPersonGrid();
   setTimeout(() => document.getElementById('inp-amount').focus(), 420);
@@ -639,11 +654,21 @@ function addExpense() {
   if (!amt || amt <= 0) { showToast('Enter a valid amount'); return; }
   if (!desc) { showToast('Add a description'); return; }
   const cat = entryMode === 'income' ? 'income' : sheetCat;
-  const newExp = { id: Date.now(), amt, desc, cat, date, person: sheetPerson };
-  expenses.unshift(newExp);
-  saveData(); closeAdd(); renderHome();
-  showToast(sheetCat === 'reimb' ? 'Reimbursement logged ↩' : 'Expense saved ✓');
-  saveToSupabase(newExp);
+  if (editingId) {
+    const idx = expenses.findIndex(e => e.id === editingId);
+    if (idx !== -1) { expenses[idx] = { id: editingId, amt, desc, cat, date, person: sheetPerson }; }
+    deleteFromSupabase(editingId);
+    saveToSupabase(expenses[idx]);
+    editingId = null;
+    saveData(); closeAdd(); renderHome();
+    showToast('Updated ✓');
+  } else {
+    const newExp = { id: Date.now(), amt, desc, cat, date, person: sheetPerson };
+    expenses.unshift(newExp);
+    saveData(); closeAdd(); renderHome();
+    showToast(entryMode === 'income' ? 'Income added ✓' : sheetCat === 'reimb' ? 'Reimbursement logged ↩' : 'Expense saved ✓');
+    saveToSupabase(newExp);
+  }
 }
 
 function buildReportFilters() {
