@@ -621,7 +621,7 @@ function renderBalanceBlock() {
 }
 function toggleBalance() {
   balanceHidden = !balanceHidden;
-  ['bal-income','bal-spent','bal-balance'].forEach(id => {
+  ['bal-income','bal-spent','bal-net','bal-balance'].forEach(id => {
     const el = document.getElementById(id);
     el.style.filter = balanceHidden ? 'blur(10px)' : 'none';
     el.style.transition = 'filter 0.3s ease';
