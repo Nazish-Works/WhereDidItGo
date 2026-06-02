@@ -545,6 +545,7 @@ function filterCat(id) { selectedCat = id; renderHome(); }
 
 function deleteExpense(id, evt) {
   evt.stopPropagation();
+  if (!confirm('Delete this entry?')) return;
   const row = document.getElementById('txrow-'+id);
   if (row) {
     row.style.transition = 'all 0.3s ease';
