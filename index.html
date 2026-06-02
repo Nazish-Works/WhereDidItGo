@@ -485,6 +485,7 @@ function renderHome() {
   const spent = me.filter(e => e.cat !== 'reimb' && e.cat !== 'income');
   const reimb = me.filter(e => e.cat === 'reimb');
   const total = spent.reduce((s,e) => s+e.amt, 0);
+  const reimbTotal = reimb.reduce((s,e) => s+e.amt, 0);
   if (!balanceViewUser) balanceViewUser = 'all';
   renderBalanceBlock();
   const net = total - reimbTotal;
