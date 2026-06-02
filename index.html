@@ -277,16 +277,21 @@ body::before { content: ''; position: fixed; top: -120px; left: 50%; transform: 
           <button onclick="setBalanceUser('others')" id="bu-others" class="filter-chip" style="padding:4px 10px;font-size:11px;">Others</button>
         </div>
       </div>
-      <div id="balance-block" onclick="toggleBalance()" style="display:none;gap:8px;margin:0 16px 14px;cursor:pointer;">
-        <div style="flex:1;background:#0c1f1f;border:0.5px solid rgba(52,232,160,0.2);border-radius:14px;padding:12px;">
+      <div id="balance-block" onclick="toggleBalance()" style="display:none;gap:8px;margin:0 16px 14px;cursor:pointer;flex-wrap:wrap;">
+        <div style="flex:1;min-width:calc(50% - 4px);background:#0c1f1f;border:0.5px solid rgba(52,232,160,0.2);border-radius:14px;padding:12px;">
           <div style="font-size:8px;color:#5a8a87;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:5px;">📥 Received</div>
           <div id="bal-income" style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:#34e8a0;">₹0</div>
         </div>
-        <div style="flex:1;background:#0c1f1f;border:0.5px solid rgba(255,112,112,0.15);border-radius:14px;padding:12px;">
+        <div style="flex:1;min-width:calc(50% - 4px);background:#0c1f1f;border:0.5px solid rgba(255,112,112,0.15);border-radius:14px;padding:12px;">
           <div style="font-size:8px;color:#5a8a87;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:5px;">📤 Spent</div>
           <div id="bal-spent" style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:#ff7070;">₹0</div>
         </div>
-        <div style="flex:1;background:#0c1f1f;border:0.5px solid rgba(32,210,190,0.2);border-radius:14px;padding:12px;">
+        <div style="flex:1;min-width:calc(50% - 4px);background:#0c1f1f;border:0.5px solid rgba(246,173,85,0.2);border-radius:14px;padding:12px;">
+          <div style="font-size:8px;color:#5a8a87;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:5px;">🧾 Net spend</div>
+          <div id="bal-net" style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:#f6ad55;">₹0</div>
+          <div id="bal-net-sub" style="font-size:7px;color:#5a8a87;margin-top:2px;">after reimbursement</div>
+        </div>
+        <div style="flex:1;min-width:calc(50% - 4px);background:#0c1f1f;border:0.5px solid rgba(32,210,190,0.2);border-radius:14px;padding:12px;">
           <div style="font-size:8px;color:#5a8a87;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:5px;">💰 Balance <span id="bal-eye" style="font-size:10px;">👁</span></div>
           <div id="bal-balance" style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:#20d2be;">₹0</div>
         </div>
@@ -604,10 +609,12 @@ function renderBalanceBlock() {
   const userSpent = userExpenses.filter(e => e.cat !== 'income' && e.cat !== 'reimb').reduce((s,e) => s+e.amt, 0);
   const userReimb = userExpenses.filter(e => e.cat === 'reimb').reduce((s,e) => s+e.amt, 0);
   const received = userIncome + userReimb;
+  const netSpend = userSpent - userReimb;
   document.getElementById('bal-income').textContent = fmt(received);
   document.getElementById('bal-spent').textContent = fmt(userSpent);
+  document.getElementById('bal-net').textContent = fmt(netSpend);
   document.getElementById('bal-balance').textContent = fmt(received - userSpent);
-  ['bal-income','bal-spent','bal-balance'].forEach(id => { document.getElementById(id).style.filter = balanceHidden ? 'blur(10px)' : 'none'; });
+  ['bal-income','bal-spent','bal-net','bal-balance'].forEach(id => { document.getElementById(id).style.filter = balanceHidden ? 'blur(10px)' : 'none'; });
   document.getElementById('balance-block').style.display = (userIncome > 0 || userReimb > 0) ? 'flex' : 'none';
   const isAdmin = currentUser && PERSON_META[currentUser].isAdmin;
   document.getElementById('balance-user-toggle').style.display = isAdmin ? 'block' : 'none';
