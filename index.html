@@ -268,6 +268,14 @@ body::before { content: ''; position: fixed; top: -120px; left: 50%; transform: 
         <div class="hero-divider"></div>
         <div class="hero-chips" id="hero-chips"></div>
       </div>
+      <div id="balance-user-toggle" style="display:none;padding:0 16px;margin-bottom:8px;">
+        <div style="display:flex;gap:4px;align-items:center;">
+          <span style="font-size:9px;color:#5a8a87;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-right:4px;">View</span>
+          <button onclick="setBalanceUser('nazish')" id="bu-nazish" class="filter-chip active" style="padding:4px 10px;font-size:11px;">Nazish</button>
+          <button onclick="setBalanceUser('arshad')" id="bu-arshad" class="filter-chip" style="padding:4px 10px;font-size:11px;">Arshad</button>
+          <button onclick="setBalanceUser('others')" id="bu-others" class="filter-chip" style="padding:4px 10px;font-size:11px;">Others</button>
+        </div>
+      </div>
       <div id="balance-block" onclick="toggleBalance()" style="display:none;gap:8px;margin:0 16px 14px;cursor:pointer;">
         <div style="flex:1;background:#0c1f1f;border:0.5px solid rgba(52,232,160,0.2);border-radius:14px;padding:12px;">
           <div style="font-size:8px;color:#5a8a87;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:5px;">📥 Received</div>
@@ -564,6 +572,31 @@ function buildPersonGrid() {
 }
 function selectPerson(id) { sheetPerson = id; buildPersonGrid(); }
 let balanceHidden = true;
+let balanceViewUser = null;
+function setBalanceUser(id) {
+  balanceViewUser = id;
+  ['nazish','arshad','others'].forEach(p => {
+    const btn = document.getElementById('bu-'+p);
+    if (btn) { btn.className = 'filter-chip' + (p===id?' active':''); }
+  });
+  renderBalanceBlock();
+}
+function renderBalanceBlock() {
+  const month = thisMonth();
+  const viewUser = balanceViewUser || currentUser;
+  const userExpenses = expenses.filter(e => (e.person||'others') === viewUser && e.date.startsWith(month));
+  const userIncome = userExpenses.filter(e => e.cat === 'income').reduce((s,e) => s+e.amt, 0);
+  const userSpent = userExpenses.filter(e => e.cat !== 'income' && e.cat !== 'reimb').reduce((s,e) => s+e.amt, 0);
+  const userReimb = userExpenses.filter(e => e.cat === 'reimb').reduce((s,e) => s+e.amt, 0);
+  const received = userIncome + userReimb;
+  document.getElementById('bal-income').textContent = fmt(received);
+  document.getElementById('bal-spent').textContent = fmt(userSpent);
+  document.getElementById('bal-balance').textContent = fmt(received - userSpent);
+  ['bal-income','bal-spent','bal-balance'].forEach(id => { document.getElementById(id).style.filter = balanceHidden ? 'blur(10px)' : 'none'; });
+  document.getElementById('balance-block').style.display = (userIncome > 0 || userReimb > 0) ? 'flex' : 'none';
+  const isAdmin = currentUser && PERSON_META[currentUser].isAdmin;
+  document.getElementById('balance-user-toggle').style.display = isAdmin ? 'block' : 'none';
+}
 function toggleBalance() {
   balanceHidden = !balanceHidden;
   ['bal-income','bal-spent','bal-balance'].forEach(id => {
