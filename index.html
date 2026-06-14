@@ -485,7 +485,8 @@ function showToast(msg) { const t = document.getElementById('toast'); t.textCont
 function renderHome() {
   if (!currentUser) return;
   const month = thisMonth();
-  const me = expenses.filter(e => e.date.startsWith(month));
+  const viewUser = balanceViewUser || 'all';
+  const me = expenses.filter(e => e.date.startsWith(month) && (viewUser === 'all' || (e.person||'others') === viewUser));
   const incomeEntries = me.filter(e => e.cat === 'income');
   const spent = me.filter(e => e.cat !== 'reimb' && e.cat !== 'income');
   const reimb = me.filter(e => e.cat === 'reimb');
@@ -512,7 +513,8 @@ function renderHome() {
   spent.forEach(e => { byCat[e.cat] = (byCat[e.cat]||0)+e.amt; });
   document.getElementById('hero-chips').innerHTML = Object.entries(byCat).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([cid,val]) => `<span class="hero-chip">${getCat(cid).emoji} ${fmt(val)}</span>`).join('');
   document.getElementById('cat-filter').innerHTML = `<div class="cat-pill ${selectedCat==='all'?'active':''}" onclick="filterCat('all')">All</div>` + CATS.map(c => `<div class="cat-pill ${selectedCat===c.id?'active':''}" onclick="filterCat('${c.id}')">${c.emoji} ${c.label}</div>`).join('');
-  const filtered = selectedCat === 'all' ? [...expenses] : expenses.filter(e => e.cat === selectedCat);
+  let filtered = selectedCat === 'all' ? [...expenses] : expenses.filter(e => e.cat === selectedCat);
+  if (viewUser !== 'all') filtered = filtered.filter(e => (e.person||'others') === viewUser);
   const feed = document.getElementById('tx-feed');
   if (!filtered.length) { feed.innerHTML = `<div class="empty"><div class="empty-icon">🌊</div><div class="empty-title">Nothing here yet</div><div class="empty-sub">Tap + to log your first expense.</div></div>`; return; }
   const today = new Date().toISOString().slice(0,10);
