@@ -602,7 +602,7 @@ function setBalanceUser(id) {
     const btn = document.getElementById('bu-'+p);
     if (btn) { btn.className = 'filter-chip' + (p===id?' active':''); }
   });
-  renderBalanceBlock();
+  renderHome();
 }
 function renderBalanceBlock() {
   const month = thisMonth();
