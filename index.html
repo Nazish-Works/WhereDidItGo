@@ -616,7 +616,8 @@ function renderBalanceBlock() {
   document.getElementById('bal-income').textContent = fmt(received);
   document.getElementById('bal-spent').textContent = fmt(userSpent);
   document.getElementById('bal-net').textContent = fmt(netSpend);
-  document.getElementById('bal-balance').textContent = fmt(received - userSpent);
+  const balDiff = received - userSpent;
+  document.getElementById('bal-balance').textContent = (balDiff < 0 ? '-' : '') + fmt(balDiff);
   ['bal-income','bal-spent','bal-net','bal-balance'].forEach(id => { document.getElementById(id).style.filter = balanceHidden ? 'blur(10px)' : 'none'; });
   document.getElementById('balance-block').style.display = (userIncome > 0 || userReimb > 0) ? 'flex' : 'none';
   const isAdmin = currentUser && PERSON_META[currentUser].isAdmin;
