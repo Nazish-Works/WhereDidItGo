@@ -249,7 +249,8 @@ body::before { content: ''; position: fixed; top: -120px; left: 50%; transform: 
       <div class="navbar">
         <div>
           <div class="navbar-title"><span class="title-where">Where</span><span class="title-did">Did</span><span class="title-it">It</span><span class="title-go">Go</span><span class="cash-fly">💸</span></div>
-          <div class="navbar-sub" id="home-subtitle">—</div>
+          <div class="navbar-sub" id="home-subtitle" onclick="event.stopPropagation();document.getElementById('month-picker').showPicker ? document.getElementById('month-picker').showPicker() : document.getElementById('month-picker').click()" style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;">—</div>
+          <input type="month" id="month-picker" onchange="setViewMonth(this.value)" style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none;">
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
           <div class="user-badge" id="user-badge" onclick="logout()" style="display:none;">
@@ -470,6 +471,9 @@ const PERSON_META = {
 };
 
 let expenses = [], currentUser = null, loginPerson = null, pinEntry = '';
+let viewMonth = null;
+function setViewMonth(val) { viewMonth = val || null; renderHome(); }
+function getActiveMonth() { return viewMonth || thisMonth(); }
 let selectedCat = 'all', sheetCat = 'food', sheetPerson = 'nazish', entryMode = 'expense';
 let donutChart = null, barChart = null, rptPersonFilter = 'all', rptCatFilter = 'all';
 
@@ -485,8 +489,9 @@ function showToast(msg) { const t = document.getElementById('toast'); t.textCont
 function renderHome() {
   if (!currentUser) return;
   const month = thisMonth();
+  const activeMonth = getActiveMonth();
   const viewUser = balanceViewUser || 'all';
-  const me = expenses.filter(e => e.date.startsWith(month) && (viewUser === 'all' || (e.person||'others') === viewUser));
+  const me = expenses.filter(e => e.date.startsWith(activeMonth) && (viewUser === 'all' || (e.person||'others') === viewUser));
   const incomeEntries = me.filter(e => e.cat === 'income');
   const spent = me.filter(e => e.cat !== 'reimb' && e.cat !== 'income');
   const reimb = me.filter(e => e.cat === 'reimb');
@@ -495,7 +500,11 @@ function renderHome() {
   if (!balanceViewUser) balanceViewUser = 'all';
   renderBalanceBlock();
   const net = total - reimbTotal;
-  document.getElementById('home-subtitle').textContent = new Date().toLocaleString('en-IN', { month:'long', year:'numeric' });
+  const [ay, am] = activeMonth.split('-');
+  const monthLabel = new Date(ay, am-1).toLocaleString('en-IN', { month:'long', year:'numeric' });
+  const isCurrentMonth = activeMonth === thisMonth();
+  document.getElementById('home-subtitle').innerHTML = monthLabel + ' <i class="ti ti-chevron-down" style="font-size:10px;"></i>' + (isCurrentMonth ? '' : ' <span onclick="event.stopPropagation();setViewMonth(null)" style="color:#20d2be;text-decoration:none;margin-left:4px;">(back to current)</span>');
+  document.getElementById('month-picker').value = activeMonth;
   document.getElementById('hero-amount').textContent = fmt(total);
   document.getElementById('hero-meta').textContent = me.length + ' transaction' + (me.length !== 1 ? 's' : '');
   const reimbEl = document.getElementById('hero-reimb');
@@ -605,7 +614,7 @@ function setBalanceUser(id) {
   renderHome();
 }
 function renderBalanceBlock() {
-  const month = thisMonth();
+  const month = getActiveMonth();
   const viewUser = balanceViewUser || 'all';
   const userExpenses = viewUser === 'all' ? expenses.filter(e => e.date.startsWith(month)) : expenses.filter(e => (e.person||'others') === viewUser && e.date.startsWith(month));
   const userIncome = userExpenses.filter(e => e.cat === 'income').reduce((s,e) => s+e.amt, 0);
