@@ -249,8 +249,8 @@ body::before { content: ''; position: fixed; top: -120px; left: 50%; transform: 
       <div class="navbar">
         <div>
           <div class="navbar-title"><span class="title-where">Where</span><span class="title-did">Did</span><span class="title-it">It</span><span class="title-go">Go</span><span class="cash-fly">💸</span></div>
-          <div class="navbar-sub" id="home-subtitle" onclick="event.stopPropagation();document.getElementById('month-picker').showPicker ? document.getElementById('month-picker').showPicker() : document.getElementById('month-picker').click()" style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;">—</div>
-          <input type="month" id="month-picker" onchange="setViewMonth(this.value)" style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none;">
+          <div class="navbar-sub" id="home-subtitle" onclick="toggleMonthDropdown()" style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;">—</div>
+          <div id="month-dropdown" style="display:none;position:absolute;top:60px;left:20px;background:#0c1f1f;border:0.5px solid rgba(32,210,190,0.2);border-radius:14px;padding:8px;z-index:50;max-height:240px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.4);"></div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
           <div class="user-badge" id="user-badge" onclick="logout()" style="display:none;">
@@ -472,7 +472,25 @@ const PERSON_META = {
 
 let expenses = [], currentUser = null, loginPerson = null, pinEntry = '';
 let viewMonth = null;
-function setViewMonth(val) { viewMonth = val || null; renderHome(); }
+function setViewMonth(val) { viewMonth = val || null; document.getElementById('month-dropdown').style.display = 'none'; renderHome(); }
+function toggleMonthDropdown() {
+  const dd = document.getElementById('month-dropdown');
+  if (dd.style.display === 'block') { dd.style.display = 'none'; return; }
+  const months = [...new Set(expenses.map(e => e.date.slice(0,7)))].sort().reverse();
+  const cur = thisMonth();
+  if (!months.includes(cur)) months.unshift(cur);
+  dd.innerHTML = months.map(m => {
+    const [y,mo] = m.split('-');
+    const label = new Date(y,mo-1).toLocaleString('en-IN',{month:'long',year:'numeric'});
+    const active = m === getActiveMonth();
+    return `<div onclick="setViewMonth('${m}')" style="padding:10px 14px;border-radius:10px;font-size:13px;cursor:pointer;color:${active?'#20d2be':'#e8f5f4'};background:${active?'rgba(32,210,190,0.1)':'transparent'};white-space:nowrap;">${label}${m===cur?' (current)':''}</div>`;
+  }).join('');
+  dd.style.display = 'block';
+}
+document.addEventListener('click', function(e) {
+  const dd = document.getElementById('month-dropdown');
+  if (dd && dd.style.display === 'block' && !dd.contains(e.target) && e.target.id !== 'home-subtitle') dd.style.display = 'none';
+});
 function getActiveMonth() { return viewMonth || thisMonth(); }
 let selectedCat = 'all', sheetCat = 'food', sheetPerson = 'nazish', entryMode = 'expense';
 let donutChart = null, barChart = null, rptPersonFilter = 'all', rptCatFilter = 'all';
@@ -503,8 +521,7 @@ function renderHome() {
   const [ay, am] = activeMonth.split('-');
   const monthLabel = new Date(ay, am-1).toLocaleString('en-IN', { month:'long', year:'numeric' });
   const isCurrentMonth = activeMonth === thisMonth();
-  document.getElementById('home-subtitle').innerHTML = monthLabel + ' <i class="ti ti-chevron-down" style="font-size:10px;"></i>' + (isCurrentMonth ? '' : ' <span onclick="event.stopPropagation();setViewMonth(null)" style="color:#20d2be;text-decoration:none;margin-left:4px;">(back to current)</span>');
-  document.getElementById('month-picker').value = activeMonth;
+  document.getElementById('home-subtitle').innerHTML = monthLabel + ' ▾' + (isCurrentMonth ? '' : ' <span onclick="event.stopPropagation();setViewMonth(null)" style="color:#20d2be;text-decoration:none;margin-left:4px;">(back to current)</span>');
   document.getElementById('hero-amount').textContent = fmt(total);
   document.getElementById('hero-meta').textContent = me.length + ' transaction' + (me.length !== 1 ? 's' : '');
   const reimbEl = document.getElementById('hero-reimb');
