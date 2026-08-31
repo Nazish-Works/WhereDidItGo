@@ -258,6 +258,7 @@ body::before { content: ''; position: fixed; top: -120px; left: 50%; transform: 
             <div class="user-badge-avatar" id="user-badge-avatar"></div>
             <div class="user-badge-name" id="user-badge-name"></div>
           </div>
+          <div class="icon-btn" onclick="exportData()" title="Export backup" style="margin-right:6px;">⬇</div>
           <div class="icon-btn" onclick="openAdd()">＋</div>
         </div>
       </div>
@@ -507,6 +508,19 @@ function fmtDate(d) { return new Date(d + 'T00:00:00').toLocaleDateString('en-IN
 function thisMonth() { const n = new Date(); return n.getFullYear() + '-' + String(n.getMonth()+1).padStart(2,'0'); }
 function getCat(id) { return CATS.find(c => c.id === id) || CATS[7]; }
 function getPerson(id) { return PERSONS.find(p => p.id === id) || PERSONS[2]; }
+function exportData() {
+  const dataStr = JSON.stringify(expenses, null, 2);
+  const blob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'wheredidiitgo-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Backup downloaded ✓');
+}
 function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2200); }
 
 function renderHome() {
