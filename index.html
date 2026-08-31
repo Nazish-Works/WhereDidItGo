@@ -414,8 +414,8 @@ async function loadFromSupabase() {
     const isAdmin = currentUser && PERSON_META[currentUser].isAdmin;
     const url = SUPABASE_URL + '/rest/v1/expenses' + (isAdmin ? '?order=id.desc&limit=500' : '?person=eq.' + currentUser + '&order=id.desc&limit=500');
     const res = await fetch(url, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } });
-    if (!res.ok) { showToast('Sync failed: ' + res.status); return; }
-    const data = await res.json();
+    if (!res.ok) { showToast('Sync failed: ' + res.status); document.getElementById('sync-banner').style.display = 'block'; return; }
+    document.getElementById('sync-banner').style.display = 'none';    const data = await res.json();
     if (Array.isArray(data)) {
       expenses = data.map(r => ({ id: r.id, amt: parseFloat(r.amt), desc: r.title, cat: r.cat, date: r.date, person: r.person || 'others' }));
       saveData();
